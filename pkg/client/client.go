@@ -23,23 +23,16 @@ type Client struct {
 	httpClient *http.Client
 
 	mu    sync.RWMutex
-	cache *models.GetAllConfigsForScopeResponse
+	cache *models.AllConfigsForScope
 
 	cancel context.CancelFunc
 }
 
 func NewClient(ctx context.Context, cfg *config.Config) (*Client, error) {
-	if cfg.APIKey == "" {
-		return nil, fmt.Errorf("foff: APIKey is required")
-	}
-	if cfg.Email == "" {
-		return nil, fmt.Errorf("foff: Email is required")
-	}
-	if cfg.BaseURL == "" {
-		return nil, fmt.Errorf("foff: BaseURL is required")
-	}
-	if cfg.Scope == "" {
-		return nil, fmt.Errorf("foff: Scope is required")
+
+	err := cfg.IsValid()
+	if err != nil {
+		return nil, fmt.Errorf("foff: invalid config: %w", err)
 	}
 
 	c := &Client{
@@ -107,7 +100,7 @@ func (c *Client) fetchConfigs(ctx context.Context) error {
 		return fmt.Errorf("foff: unexpected status %d: %s", resp.StatusCode, string(body))
 	}
 
-	var result models.GetAllConfigsForScopeResponse
+	var result models.AllConfigsForScope
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return fmt.Errorf("foff: failed to decode response: %w", err)
 	}
@@ -120,7 +113,7 @@ func (c *Client) fetchConfigs(ctx context.Context) error {
 }
 
 // GetAllConfigs returns the cached config response.
-func (c *Client) GetAllConfigs() *models.GetAllConfigsForScopeResponse {
+func (c *Client) GetAllConfigs() *models.AllConfigsForScope {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.cache
