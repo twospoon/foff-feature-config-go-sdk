@@ -6,7 +6,6 @@ import (
 
 type Config struct {
 	APIKey          string
-	Email           string
 	BaseURL         string
 	Scope           string
 	PollingInterval uint32
@@ -15,9 +14,6 @@ type Config struct {
 func (cfg *Config) IsValid() error {
 	if cfg.APIKey == "" {
 		return fmt.Errorf("APIKey is required")
-	}
-	if cfg.Email == "" {
-		return fmt.Errorf("Email is required")
 	}
 	if cfg.BaseURL == "" {
 		return fmt.Errorf("BaseURL is required")

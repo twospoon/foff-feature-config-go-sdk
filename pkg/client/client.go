@@ -16,7 +16,6 @@ import (
 
 const (
 	apiKeyHeaderKey = "X-FOFF-API-Key"
-	emailHeaderKey  = "X-FOFF-Email"
 )
 
 type Client struct {
@@ -50,7 +49,7 @@ func NewClient(ctx context.Context, cfg *config.Config) (*Client, error) {
 
 	// Start background polling if interval > 0
 	if cfg.PollingInterval > 0 {
-		pollCtx, cancel := context.WithCancel(context.Background())
+		pollCtx, cancel := context.WithCancel(ctx)
 		c.cancel = cancel
 		go c.poll(pollCtx)
 	}
@@ -88,7 +87,6 @@ func (c *Client) fetchConfigs(ctx context.Context) error {
 	}
 
 	req.Header.Set(apiKeyHeaderKey, c.config.APIKey)
-	req.Header.Set(emailHeaderKey, c.config.Email)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
