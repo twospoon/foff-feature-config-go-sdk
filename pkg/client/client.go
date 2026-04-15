@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -112,40 +113,28 @@ func (c *Client) fetchConfigs(ctx context.Context) error {
 	return nil
 }
 
-// GetAllConfigs returns the cached config response.
-func (c *Client) GetAllConfigs() *models.AllConfigsForScope {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	return c.cache
-}
-
 // GetFeatureConfig returns the config map for a specific feature, or nil if not found.
-func (c *Client) GetFeatureConfig(featureName string) map[string]interface{} {
+func (c *Client) GetFeatureConfig(featureName string, orderedHeirarchy []string) interface{} {
+
+	// check if feature exists at all
+	c.mu.RLock()
+	_, featureExists := c.cache.Features[featureName]
+	c.mu.RUnlock()
+
+	if !featureExists {
+		return nil
+	}
+
+
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	if c.cache == nil {
-		return nil
+	for i := len(orderedHeirarchy); i > 0; i-- {
+		heirarchyString := strings.Join(orderedHeirarchy[:i], "#")
+		if featureConfig, exists := c.cache.Features[featureName][heirarchyString]; exists {
+			return featureConfig
+		}
 	}
-	return c.cache.Features[featureName]
-}
 
-// GetFeatureConfigValue returns a specific key's value for a feature, or nil if not found.
-func (c *Client) GetFeatureConfigValue(featureName, key string) interface{} {
-	featureCfg := c.GetFeatureConfig(featureName)
-	if featureCfg == nil {
-		return nil
-	}
-	return featureCfg[key]
-}
-
-// GetOrderedHierarchy returns the ordered hierarchy from the cached response.
-func (c *Client) GetOrderedHierarchy() []string {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-
-	if c.cache == nil {
-		return nil
-	}
-	return c.cache.OrderedHeirarchy
+	return c.cache.Features[featureName]["default"]
 }
