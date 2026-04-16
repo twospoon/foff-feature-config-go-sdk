@@ -4,6 +4,8 @@ This document covers the details of how to integrate with the FOFF Feature Confi
 
 ## Installation
 
+Please head over to [foff.twospoon.ai](https://foff.twospoon.ai) create your very first feature config. Then proceed to integrate it in your codebase using the following steps:
+
 ```bash
 go get github.com/twospoon/foff-feature-config-go-sdk
 ```
@@ -54,7 +56,7 @@ The SDK is configured via the `config.Config` struct:
 | Field             | Type     | Required | Description                                                                 |
 |-------------------|----------|----------|-----------------------------------------------------------------------------|
 | `APIKey`          | `string` | Yes      | Your FOFF API key. Sent as the `X-FOFF-API-Key` header on every request.   |
-| `BaseURL`         | `string` | Yes      | Base URL of the FOFF API (e.g. `https://api.foff.dev`).                    |
+| `BaseURL`         | `string` | Yes      | Base URL of the FOFF API.                    |
 | `Scope`           | `string` | Yes      | The scope to fetch configs for (e.g. `production`, `staging`).             |
 | `PollingInterval` | `uint32` | No       | How often (in seconds) to poll for config updates. See [Polling](#polling). |
 
