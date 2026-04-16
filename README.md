@@ -6,6 +6,10 @@ This document covers the details of how to integrate with the FOFF Feature Confi
 
 Please head over to [foff.twospoon.ai](https://foff.twospoon.ai) create your very first feature config. Then proceed to integrate it in your codebase using the following steps:
 
+## Dependency Installation
+
+Install the dependency using the following command
+
 ```bash
 go get github.com/twospoon/foff-feature-config-go-sdk
 ```
@@ -13,6 +17,8 @@ go get github.com/twospoon/foff-feature-config-go-sdk
 Requires **Go 1.22.10** or later.
 
 ## Quick Start
+
+Proceed to create the client
 
 ```go
 package main
@@ -28,7 +34,7 @@ import (
 
 func main() {
 	ctx := context.Background()
-
+    // STEP 1: Create appropriate config
 	cfg := &config.Config{
 		APIKey:          "your-api-key",
 		BaseURL:         "https://foff.twospoon.ai/live",
@@ -36,11 +42,14 @@ func main() {
 		PollingInterval: 30, // seconds
 	}
 
+    // STEP 2: Create the client with the config
 	c, err := client.NewClient(ctx, cfg)
 	if err != nil {
 		log.Fatalf("failed to create client: %v", err)
 	}
 	defer c.Close()
+
+    // STEP 3: Retrieve configs for your created features for given heirarchies
 
 	// Retrieve a feature config with hierarchy-based resolution
     // provide the values for the heirarchy for the given user
@@ -55,7 +64,7 @@ The SDK is configured via the `config.Config` struct:
 
 | Field             | Type     | Required | Description                                                                 |
 |-------------------|----------|----------|-----------------------------------------------------------------------------|
-| `APIKey`          | `string` | Yes      | Your FOFF API key. Sent as the `X-FOFF-API-Key` header on every request.   |
+| `APIKey`          | `string` | Yes      | Your FOFF API key.   |
 | `BaseURL`         | `string` | Yes      | Base URL of the FOFF API.                    |
 | `Scope`           | `string` | Yes      | The scope to fetch configs for (e.g. `production`, `staging`).             |
 | `PollingInterval` | `uint32` | No       | How often (in seconds) to poll for config updates. See [Polling](#polling). |
@@ -64,13 +73,6 @@ The SDK is configured via the `config.Config` struct:
 
 Calling `NewClient` automatically validates the config. It returns an error if any required field is empty.
 
-You can also validate independently:
-
-```go
-if err := cfg.IsValid(); err != nil {
-    // handle invalid config
-}
-```
 
 ### Normalisation
 
@@ -112,12 +114,12 @@ value := c.GetFeatureConfig("dark-mode", []string{"org-1", "team-a", "user-123"}
 
 **Hierarchy resolution** works from most-specific to least-specific:
 
-1. The SDK joins the hierarchy elements with `#` and looks up from the most specific combination first.
+1. The SDK looks up from the most specific combination first.
 2. For the example above, it checks keys in this order:
-   - `org-1#team-a#user-123` (full match)
-   - `org-1#team-a` (two levels)
+   - `org-1 + team-a + user-123` (full match)
+   - `org-1 + team-a` (two levels)
    - `org-1` (one level)
-3. If none match, it falls back to the `"default"` key.
+3. If none match, it falls back to the `"default"` value of the config for a feature.
 4. If the feature does not exist at all, it returns `nil`.
 
 This lets you define config overrides at any level of your hierarchy (organisation → team → user, environment → region → service, etc.) and the SDK resolves the most specific value automatically.
