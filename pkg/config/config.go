@@ -23,3 +23,13 @@ func (cfg *Config) IsValid() error {
 	}
 	return nil
 }
+
+func (cfg *Config) Normalise() {
+	if cfg.PollingInterval < 10 {
+		cfg.PollingInterval = 10
+	}
+
+	if cfg.PollingInterval > 3600 {
+		cfg.PollingInterval = 3600
+	}
+}

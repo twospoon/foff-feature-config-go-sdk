@@ -35,6 +35,8 @@ func NewClient(ctx context.Context, cfg *config.Config) (*Client, error) {
 		return nil, fmt.Errorf("foff: invalid config: %w", err)
 	}
 
+	cfg.Normalise()
+
 	c := &Client{
 		config: cfg,
 		httpClient: &http.Client{
