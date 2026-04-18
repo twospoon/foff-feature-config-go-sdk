@@ -116,6 +116,11 @@ func (c *Client) fetchConfigs(ctx context.Context) error {
 // GetFeatureConfig returns the config map for a specific feature, or nil if not found.
 func (c *Client) GetFeatureConfig(featureName string, orderedHeirarchy []string) interface{} {
 
+	if len(orderedHeirarchy) != len(c.cache.OrderedHeirarchy) {
+		panicMessage := fmt.Sprintf("length of provided heirarchy (%d) does not match expected length (%d) for heirarchy %v", len(orderedHeirarchy), len(c.cache.OrderedHeirarchy), c.cache.OrderedHeirarchy)
+		panic(panicMessage)
+	}
+
 	// check if feature exists at all
 	c.mu.RLock()
 	_, featureExists := c.cache.Features[featureName]
@@ -124,7 +129,6 @@ func (c *Client) GetFeatureConfig(featureName string, orderedHeirarchy []string)
 	if !featureExists {
 		return nil
 	}
-
 
 	c.mu.RLock()
 	defer c.mu.RUnlock()
